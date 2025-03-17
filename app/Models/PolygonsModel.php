@@ -8,5 +8,5 @@ class PolygonsModel extends Model
 {
     protected $table = 'polygons';
 
-    protected $guarded = ('id');
+    protected $guarded = ['id'];
 }

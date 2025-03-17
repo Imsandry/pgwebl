@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PointsModel;
 use Illuminate\Http\Request;
+use App\Models\PointsModel;
 
 class PointsController extends Controller
 {
 
     public function __construct()
     {
-        $this->points = new PointsModel;
+        $this->points = new PointsModel();
     }
+
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $data = [
-            'title' => 'Map'
+            'title'=>'Map',
         ];
-
         return view('map', $data);
-
     }
 
     /**
@@ -36,19 +36,40 @@ class PointsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
+        // Validation recuest
+        $request->validate(
+    [
+       'name'=> 'required|unique:points,name',
+       'description => required',
+       'geom_point => required',
+    ],
+    [
+       'name.required'=> 'Name is required',
+       'name.unique' => 'Name already exists',
+       'description.required' => 'Descrption is required',
+       'geom_point.required' => 'Geometry point is required',
+    ]
+    );
+
+
         $data = [
             'geom' => $request->geom_point,
             'name' => $request->name,
-            'description' => $request->description
+            'description' => $request->description,
         ];
 
-        // Create Data
-        $this->points->create($data);
 
-        // Redirect to Map
-        return redirect()->route('map');
+
+        //Create data
+        if (!$this->points->create($data)) {
+        return redirect()->route('map')->with('error', 'Point failed to add');
+    }
+        //Redirect to map
+
+        return redirect()->route('map')->with('success', 'Point has been added');
     }
 
     /**
