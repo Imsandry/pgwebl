@@ -207,5 +207,71 @@
 
             drawnItems.addLayer(layer);
         });
+        /* GeoJSON Point */
+        var point = L.geoJson(null, {
+            onEachFeature: function(feature, layer) {
+                var popupContent = "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" + "Dibuat: " + feature.properties
+                    .created_at;
+                layer.on({
+                    click: function(e) {
+                        point.bindPopup(popupContent);
+                    },
+                    mouseover: function(e) {
+                        point.bindTooltip(feature.properties.kab_kota);
+                    },
+                });
+            },
+        });
+
+        $.getJSON("{{ route('api.points') }}", function(data) {
+            point.addData(data);
+            map.addLayer(point);
+        });
+        /* GeoJSON Polyline */
+			var polyline = L.geoJson(null, {
+				onEachFeature: function (feature, layer) {
+					var popupContent = "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+						"Panjang: " + feature.properties.length_km + "meter<br>"+
+                        "Dibuat: " + feature.properties.created_at;
+
+					layer.on({
+						click: function (e) {
+							polyline.bindPopup(popupContent);
+						},
+						mouseover: function (e) {
+							polyline.bindTooltip(feature.properties.kab_kota);
+						},
+					});
+				},
+			});
+
+            $.getJSON("{{route('api.polylines')}}", function (data) {
+				polyline.addData(data);
+				map.addLayer(polyline);
+			});
+        /* GeoJSON Polygon */
+        var polygon = L.geoJson(null, {
+            onEachFeature: function(feature, layer) {
+                var popupContent = "Nama: " + feature.properties.name + "<br>" +
+                    "Panjang: " + feature.properties.length_km + "meter<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+                layer.on({
+                    click: function(e) {
+                        polygon.bindPopup(popupContent);
+                    },
+                    mouseover: function(e) {
+                        polygon.bindTooltip(feature.properties.name);
+                    },
+                });
+            },
+        });
+
+        $.getJSON("{{ route('api.polygons') }}", function(data) {
+            polygon.addData(data);
+            map.addLayer(polygon);
+        });
     </script>
 @endsection
