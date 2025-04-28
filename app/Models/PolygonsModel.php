@@ -19,7 +19,7 @@ class PolygonsModel extends Model
             ST_Area(geom, true) / 1000000 AS area_km2,
             ST_Area(geom, true) / 10000 AS area_hektar,
             created_at,
-            updated_at'))
+            updated_at, image'))
             ->get();
 
         $geojson = [
@@ -39,6 +39,7 @@ class PolygonsModel extends Model
                     'area_hektar' => $p->area_hektar,
                     'created_at' => $p->created_at,
                     'updated_at' => $p->updated_at,
+                    'image' =>$p->image,
                 ],
             ];
 
