@@ -232,16 +232,37 @@
         /* GeoJSON Point */
         var point = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
-                var popupContent = "Nama: " + feature.properties.name + "<br>" +
-                    "Deskripsi: " + feature.properties.description + "<br>" + "Dibuat: " + feature.properties
-                    .created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.properties
-                    .image + "' width='200' alt=''>";
+                var routedelete = "{{ route('points.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
+
+                var routeedit = "{{ route('points.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
+
+                var popupContent =
+                    "Nama: " + feature.properties.name + "<br>" +
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties.image +
+                    "' width='300'alt=''>" + "<br>" +
+
+                    "<div class = 'row mt-4'>" +
+                    "<div class ='col-6 'text-end'>" +
+                    "<a href='" + routeedit + "'class='btn btn-warning btn-sm'><i class ='fa-solid fa-pen-to-square'></i></a>" +
+                    "</div>" +
+
+                    "<div class ='col-6 'text-end'>" +
+                    "<form method='POST' action='" + routedelete + "'>" +
+                    '@csrf' + '@method('DELETE')' +
+                    "<button type = 'submit' class='btn btn-danger btn-sm' onclick='return confirm(`Yakin akan dihapus?`)'><i class='fa-solid fa-trash-can'></i>Hapus</button>" +
+                    "</form>" +
+                    "</div>" +
+                    "</div>";
+
                 layer.on({
                     click: function(e) {
                         point.bindPopup(popupContent);
                     },
                     mouseover: function(e) {
-                        point.bindTooltip(feature.properties.kab_kota);
+                        point.bindTooltip(feature.properties.name);
                     },
                 });
             },
@@ -254,11 +275,19 @@
         /* GeoJSON Polyline */
         var polyline = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
+                var routedelete = "{{ route('polylines.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
                 var popupContent = "Nama: " + feature.properties.name + "<br>" +
                     "Deskripsi: " + feature.properties.description + "<br>" +
                     "Panjang: " + feature.properties.length_km + "km<br>" +
-                    "Dibuat: " + feature.properties.created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.properties
-                    .image + "' width='200' alt=''>";
+                    "Dibuat: " + feature.properties.created_at + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties
+                    .image + "' width='200' alt=''>" +
+                    "<br>" +
+                    "<form method='POST' action='" + routedelete + "'>" +
+                    '@csrf' + '@method('DELETE')' +
+                    "<button type = 'submit' class='btn btn-danger btn-sm' onclick='return confirm(`Yakin akan dihapus?`)'><i class='fa-solid fa-trash-can'></i>Hapus</button>" +
+                    "</form>";
 
                 layer.on({
                     click: function(e) {
@@ -278,11 +307,19 @@
         /* GeoJSON Polygon */
         var polygon = L.geoJson(null, {
             onEachFeature: function(feature, layer) {
+                var routedelete = "{{ route('polygons.destroy', ':id') }}";
+                routedelete = routedelete.replace(':id', feature.properties.id);
                 var popupContent = "Nama: " + feature.properties.name + "<br>" +
                     "Deskripsi: " + feature.properties.description + "<br>" +
                     "Luas: " + feature.properties.area_hektar + "ha<br>" +
-                    "Dibuat: " + feature.properties.created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.properties
-                    .image + "' width='200'>";
+                    "Dibuat: " + feature.properties.created_at + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties
+                    .image + "' width='200'>" +
+                    "<br>" +
+                    "<form method='POST' action='" + routedelete + "'>" +
+                    '@csrf' + '@method('DELETE')' +
+                    "<button type = 'submit' class='btn btn-danger btn-sm' onclick='return confirm(`Yakin akan dihapus?`)'><i class='fa-solid fa-trash-can'></i>Hapus</button>" +
+                    "</form>";
 
                 layer.on({
                     click: function(e) {

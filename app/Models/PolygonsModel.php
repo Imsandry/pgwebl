@@ -12,7 +12,7 @@ class PolygonsModel extends Model
 
     public function gejson_polygons()
     {
-        $polygons = $this->select(DB::raw('ST_AsGeoJSON(geom) AS geom,
+        $polygons = $this->select(DB::raw('id, ST_AsGeoJSON(geom) AS geom,
             name,
             description,
             ST_Area(geom, true) AS area_m2,
@@ -32,6 +32,7 @@ class PolygonsModel extends Model
                 'type' => 'Feature',
                 'geometry' => json_decode($p->geom),
                 'properties' => [
+                    'id' => $p->id,
                     'name' => $p->name,
                     'description' => $p->description,
                     'area_m2' => $p->area_2,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use App\Models\PolygonsModel;
 
 class PolygonsController extends Controller
@@ -94,6 +95,18 @@ class PolygonsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $imagefile = $this->polygon->find($id)->image;
+
+        if (!$this->polygon->destroy($id)) {
+            return redirect()->route('map')->with('error', 'polygons failed to delete');
+        }
+
+        // Delete image file
+        if($imagefile != null){
+            if (File::exists('./storage/images/' . $imagefile)) {
+                unlink('./storage/images/' . $imagefile);
+            }
+        }
+        return redirect()->route('map')->with('success', 'polygons has been deleted');
     }
 }
