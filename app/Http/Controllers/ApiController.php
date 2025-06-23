@@ -44,4 +44,10 @@ class APIController extends Controller
         $polygons = $this->polygons->geojson_polygons();
         return response()->json($polygons);
     }
+
+    public function polygon($id)
+    {
+        $polygon = $this->polygons->geojson_polygon($id);
+        return response()->json($polygon);
+    }
 }

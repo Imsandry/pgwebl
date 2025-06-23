@@ -7,15 +7,14 @@ use App\Models\PolylinesModel;
 
 class PolylinesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function __construct()
     {
         $this->polylines = new PolylinesModel();
     }
-
-     public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
         //
     }
@@ -23,9 +22,7 @@ class PolylinesController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-
-
-     public function create()
+    public function create()
     {
         //
     }
@@ -35,51 +32,48 @@ class PolylinesController extends Controller
      */
     public function store(Request $request)
     {
-        // Validation recuest
-        $request->validate(
-    [
-       'name'=> 'required|unique:polylines,name',
-       'description => required',
-       'geom_polyline => required',
-       'image' => 'nullable|mimes:jpeg,png,jpg |max:1024',
-    ],
-    [
-       'name.required'=> 'Name is required',
-       'name.unique' => 'Name already exists',
-       'description.required' => 'Descrption is required',
-       'geom_polyline.required' => 'Geometry polyline is required',
-    ]
-    );
+        // validate data
+        $request->validate([
+            'name' => 'required|unique:polylines,name',
+            'description' => 'required',
+            'geom_polyline' => 'required',
+            'image' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:5120'
+        ],
+        [
+            'name.required' => 'Name is required',
+            'name.unique' => 'Name already exists',
+            'description.required' => 'Description is required',
+            'geom_polyline.required' => 'Geometry is required',
+        ]);
 
-    if (!is_dir('storage/images')) {
-        mkdir('./storage/images', 0777);
-     }
+        // make folder
+        if (!is_dir('storage/images')) {
+            mkdir('./storage/images', 0777);
+        }
 
-    if ($request->hasFile('image')) {
-        $image = $request->file('image');
-        $name_image = time() . "_polyline." . strtolower($image->getClientOriginalExtension());
-        $image->move('storage/images', $name_image);
-      } else {
-        $name_image = null;
-      }
-
+        // upload image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_polyline." . strtolower($image->getClientOriginalExtension());
+            $image->move('storage/images', $name_image);
+        } else {
+            $name_image = null;
+        }
 
         $data = [
             'geom' => $request->geom_polyline,
             'name' => $request->name,
             'description' => $request->description,
             'image' => $name_image,
+            'user_id' =>auth()->user()->id,
         ];
 
+        // create data
+        if (!$this->polylines->create($data)) {
+            return redirect()->route('map')->with('error', 'Polyline failed to add!');
+        }
 
-
-        //Create data
-        if(!$this->polylines->create($data)) {
-        return redirect()->route('map')->with('error', 'polyline failed to add');
-    }
-        //Redirect to map
-
-        return redirect()->route('map')->with('success', 'polyline has been added');
+        return redirect()->route('map')->with('success', 'Polyline has been added!');
     }
 
     /**
@@ -95,7 +89,12 @@ class PolylinesController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = [
+            'title' => 'Edit Polyline',
+            'id' => $id,
+        ];
+
+        return view('edit-polyline', $data);
     }
 
     /**
@@ -103,7 +102,61 @@ class PolylinesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate(
+            [
+                'name' => 'required|unique:polylines,name,' .$id,
+                'description' => 'required',
+                'geom_polyline' => 'required',
+                'image' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ],
+            [
+                'name.required' => 'Name is required',
+                'name.unique' => 'Name already exists',
+                'description.required' => 'Description is required',
+                'geom_polyline.required' => 'Geometry polyline is required',
+            ]
+        );
+
+        // Create 'images' directory if it doesn't exist
+        if (!is_dir(public_path('storage/images'))) {
+            mkdir(public_path('storage/images'), 0777, true);
+        }
+
+        $old_image = $this->polylines->find($id)->image;
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_polyline." . strtolower($image->getClientOriginalExtension());
+
+            // Use Storage facade for file handling
+            $image->storeAs('images', $name_image, 'public');
+
+            if ($old_image != null){
+                if(file_exists('./storage/'.$old_image)){
+            unlink('./storage/images/'.$old_image);
+                }
+            }
+
+        } else {
+            $name_image = $old_image;
+        }
+
+        // Prepare data
+        $data = [
+            'geom' => $request->geom_polyline,
+            'name' => $request->name,
+            'description' => $request->description,
+            'image' => $name_image,
+        ];
+
+        // update data
+        try {
+            $this->polylines->find($id)->update($data);
+            return redirect()->route('map')->with('success', 'Polyline has been updated');
+        } catch (\Exception $e) {
+            return redirect()->route('map')->with('error', 'Polyline failed to update');
+        }
     }
 
     /**
@@ -114,15 +167,15 @@ class PolylinesController extends Controller
         $imagefile = $this->polylines->find($id)->image;
 
         if (!$this->polylines->destroy($id)) {
-            return redirect()->route('map')->with('error', 'Polyline failed to delete');
+            return redirect()->route('map')->with('error', 'Polylines failed to delete!');
         }
-
-        // Delete image file
-        if($imagefile != null){
-            if (File::exists('./storage/images/' . $imagefile)) {
+        // delete image
+        if ($imagefile != null) {
+            if (file_exists('./storage/images/' . $imagefile)) {
                 unlink('./storage/images/' . $imagefile);
             }
         }
-        return redirect()->route('map')->with('success', 'Polyline has been deleted');
+
+        return redirect()->route('map')->with('success', 'Polylines has been deleted!');
     }
 }
